@@ -74,7 +74,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             do{
                 Images image = new Images();
                 image.set_id(Integer.parseInt(cursor.getString(0)));
-                image.set_image(Integer.parseInt(cursor.getString(1)));
+                image.set_image(cursor.getString(1));
                 // Adding single contact to list
                 imagesList.add(image);
             } while (cursor.moveToNext());

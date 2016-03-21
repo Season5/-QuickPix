@@ -5,14 +5,19 @@ package com.scurrae.chris.quickpix;
  */
 public class Images {
     int _id;
-    int _image;
+    String _image;
 
     // Empty constructor
     public Images(){
 
     }
+
     // Constructor with id and image as parameters
-    public Images(int id, int image){
+    public Images(String image){
+        this._image = image;
+    }
+    // Constructor with id and image as parameters
+    public Images(int id, String image){
         this._id = id;
         this._image = image;
     }
@@ -25,11 +30,11 @@ public class Images {
         this._id = _id;
     }
 
-    public int get_image() {
+    public String get_image() {
         return _image;
     }
 
-    public void set_image(int _image) {
+    public void set_image(String _image) {
         this._image = _image;
     }
 }
