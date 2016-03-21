@@ -37,10 +37,10 @@ public class DatabaseAdapter extends RecyclerView.Adapter<DatabaseAdapter.MyView
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Images current = data.get(position);
-        byte[] decode = Base64.decode(current.get_image(), Base64.DEFAULT);
-        Bitmap decodedbit = BitmapFactory.decodeByteArray(decode, 0, decode.length);
-        holder.imageView.setImageBitmap(decodedbit);
-        holder.imageView.setImageDrawable(current.get_image());
+//        byte[] decode = Base64.decode(current.get_image(), Base64.DEFAULT);
+//        Bitmap decodedbit = BitmapFactory.decodeByteArray(decode, 0, decode.length);
+//        holder.imageView.setImageBitmap(decodedbit);
+        holder.imageView.setImageBitmap(current.get_image());
 
 
     }
@@ -52,11 +52,12 @@ public class DatabaseAdapter extends RecyclerView.Adapter<DatabaseAdapter.MyView
     }
     class MyViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
+        GridView gridView;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             imageView = (ImageView)itemView.findViewById(R.id.imagevi);
-
+            gridView = (GridView)itemView.findViewById(R.id.gridview);
         }
     }
 }

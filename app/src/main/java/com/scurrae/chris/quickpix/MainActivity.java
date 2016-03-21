@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     static final int CAM_REQUEST = 1;
     private GridView gridView;
     private RecyclerView recyclerView;
+    private List<Images> bmpls = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,24 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
+        SQLiteDatabase sdb = this.openOrCreateDatabase("image.db", Context.MODE_PRIVATE, null);
+        sdb.execSQL("create table if not exists tb (a blob)");
+
+        Cursor c = sdb.rawQuery("select * from tb", null);
+        if(c.moveToNext()){
+            byte[] Imaga = c.getBlob(0);
+            Bitmap bmp = BitmapFactory.decodeByteArray(Imaga, 0, Imaga.length);
+            bmpls.add(new Images(bmp));
+        }
+
+        DatabaseAdapter dba = new DatabaseAdapter(this, bmpls);
+//        gridView.setAdapter(dba);
+        recyclerView = (RecyclerView)findViewById(R.id.recycler);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.setAdapter(dba);
     }
     private File getFile(){
         // Instanciate file
@@ -88,8 +108,8 @@ public class MainActivity extends AppCompatActivity {
         // Display image
         String path = "sdcard/camera_app/cam_image.jpg";
         Drawable path1 = Drawable.createFromPath(path);
-        imageView.setImageDrawable(path1);
         SQLiteDatabase sdb = this.openOrCreateDatabase("image.db", Context.MODE_PRIVATE, null);
+        sdb.execSQL("create table if not exists tb (a blob)");
         try {
             FileInputStream dis = new FileInputStream(path);
             byte[] ima = new byte[dis.available()];
@@ -98,8 +118,16 @@ public class MainActivity extends AppCompatActivity {
             ContentValues values = new ContentValues();
             values.put("a", ima);
             sdb.insert("tb", null, values);
+
+            dis.close();
         } catch (IOException e){
             e.printStackTrace();
+        }
+        Cursor c = sdb.rawQuery("select * from tb", null);
+        if(c.moveToNext()){
+            byte[] Imaga = c.getBlob(0);
+            Bitmap bmp = BitmapFactory.decodeByteArray(Imaga, 0, Imaga.length);
+            bmpls.add(new Images(bmp));
         }
 //        // Convert to byte array
 //        Bitmap bmp = BitmapFactory.decodeFile(path);
@@ -110,17 +138,16 @@ public class MainActivity extends AppCompatActivity {
 //        String imageFile = Base64.encodeToString(bytes, Base64.DEFAULT);
 //        db.addImage(new Images(imageFile));
 //        // convert image string to jpg
-//        List<Images> img = db.getAllImages();
 //
 //
 //        Log.d("Main", "Error");
 //        db = new DatabaseHandler(this);
 //
-//        DatabaseAdapter dba = new DatabaseAdapter(this, img);
-////        gridView.setAdapter(dba);
-//        recyclerView = (RecyclerView)findViewById(R.id.recycler);
-//        recyclerView.setAdapter(dba);
-//        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        DatabaseAdapter dba = new DatabaseAdapter(this, bmpls);
+//        gridView.setAdapter(dba);
+        recyclerView = (RecyclerView)findViewById(R.id.recycler);
+        recyclerView.setAdapter(dba);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
     }
 }

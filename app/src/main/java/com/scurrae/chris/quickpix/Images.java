@@ -1,11 +1,14 @@
 package com.scurrae.chris.quickpix;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+
 /**
  * Created by chris on 3/21/16.
  */
 public class Images {
     int _id;
-    String _image;
+    Bitmap _image;
 
     // Empty constructor
     public Images(){
@@ -13,11 +16,11 @@ public class Images {
     }
 
     // Constructor with id and image as parameters
-    public Images(String image){
+    public Images(Bitmap image){
         this._image = image;
     }
     // Constructor with id and image as parameters
-    public Images(int id, String image){
+    public Images(int id, Bitmap image){
         this._id = id;
         this._image = image;
     }
@@ -30,11 +33,11 @@ public class Images {
         this._id = _id;
     }
 
-    public String get_image() {
+    public Bitmap get_image() {
         return _image;
     }
 
-    public void set_image(String _image) {
+    public void set_image(Bitmap _image) {
         this._image = _image;
     }
 }
