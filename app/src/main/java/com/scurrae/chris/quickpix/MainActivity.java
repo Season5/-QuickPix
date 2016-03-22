@@ -5,28 +5,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Camera;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private GridView gridView;
     private RecyclerView recyclerView;
     private List<Images> bmpls = new ArrayList<>();
+    private List<Bitmap> nk = new ArrayList<>();
+    private DatabaseAdapter dba;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,106 +50,73 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         button = (Button)findViewById(R.id.open_cam);
-        imageView = (ImageView)findViewById(R.id.grid);
-//        gridView = (GridView)findViewById(R.id.gridview);
+//        imageView = (ImageView)findViewById(R.id.grid);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Intent to open camera app
-                Intent camera_intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                // Accessing the image file
-                File file = getFile();
-                // Returning the image from camera
-                camera_intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
-                // Begin camera activity
-                startActivityForResult(camera_intent, CAM_REQUEST);
-
+                openCamera();
             }
         });
-
-
-        SQLiteDatabase sdb = this.openOrCreateDatabase("image.db", Context.MODE_PRIVATE, null);
-        sdb.execSQL("create table if not exists tb (a blob)");
-
-        Cursor c = sdb.rawQuery("select * from tb", null);
-        if(c.moveToNext()){
-            byte[] Imaga = c.getBlob(0);
-            Bitmap bmp = BitmapFactory.decodeByteArray(Imaga, 0, Imaga.length);
-            bmpls.add(new Images(bmp));
-        }
-
-        DatabaseAdapter dba = new DatabaseAdapter(this, bmpls);
-//        gridView.setAdapter(dba);
+        Firebase.setAndroidContext(this);
+        getFire();
+        dba = new DatabaseAdapter(this, bmpls);
         recyclerView = (RecyclerView)findViewById(R.id.recycler);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(dba);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
     }
-    private File getFile(){
-        // Instanciate file
-        File folder = new File("sdcard/camera_app");
-        boolean success = false;
-        if(!folder.exists()){
-            // Create folder if it doesn't exist
-            success = folder.mkdir();
-        }
-        if(!success){
-            Log.d("MAIN", "Folder not Created");
-        } else {
-            Log.d("MAIN", "Folder  Created");
-        }
-        // Create image file
-        File image_file = new File(folder, "cam_image.jpg");
-
-        return image_file;
-
+    private void openCamera(){
+        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(i, 0);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Firebase myFirebaseRef = new Firebase("https://shortshotie.firebaseio.com/");
+        final Firebase imageRef = myFirebaseRef.child("images");
         // Display image
-        String path = "sdcard/camera_app/cam_image.jpg";
-        Drawable path1 = Drawable.createFromPath(path);
-        SQLiteDatabase sdb = this.openOrCreateDatabase("image.db", Context.MODE_PRIVATE, null);
-        sdb.execSQL("create table if not exists tb (a blob)");
-        try {
-            FileInputStream dis = new FileInputStream(path);
-            byte[] ima = new byte[dis.available()];
-            dis.read(ima);
+        Images i = new Images();
+        if(resultCode == RESULT_OK){
+            Bitmap bmp = (Bitmap) data.getExtras().get("data");
+//            imageView.setImageBitmap(bmp);
+            String imagefile = Base64.encodeToString(i.getBArray(bmp), Base64.DEFAULT);
+            imageRef.push().setValue(imagefile);
 
-            ContentValues values = new ContentValues();
-            values.put("a", ima);
-            sdb.insert("tb", null, values);
+//            db.addImage(new Images(bmp));
+        }
 
-            dis.close();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        Cursor c = sdb.rawQuery("select * from tb", null);
-        if(c.moveToNext()){
-            byte[] Imaga = c.getBlob(0);
-            Bitmap bmp = BitmapFactory.decodeByteArray(Imaga, 0, Imaga.length);
-            bmpls.add(new Images(bmp));
-        }
-//        // Convert to byte array
-//        Bitmap bmp = BitmapFactory.decodeFile(path);
-//        ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
-//        bmp.compress(Bitmap.CompressFormat.JPEG, 100, bYtE);
-//        bmp.recycle();
-//        byte[] bytes = bYtE.toByteArray();
-//        String imageFile = Base64.encodeToString(bytes, Base64.DEFAULT);
-//        db.addImage(new Images(imageFile));
-//        // convert image string to jpg
-//
-//
-//        Log.d("Main", "Error");
-//        db = new DatabaseHandler(this);
-//
-        DatabaseAdapter dba = new DatabaseAdapter(this, bmpls);
-//        gridView.setAdapter(dba);
+
+        dba = new DatabaseAdapter(this, bmpls);
+
+        getFire();
+
         recyclerView = (RecyclerView)findViewById(R.id.recycler);
         recyclerView.setAdapter(dba);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
+    }
+
+    public void getFire(){
+        Firebase myFirebaseRef = new Firebase("https://shortshotie.firebaseio.com/");
+        final Firebase imageRef = myFirebaseRef.child("images");
+        imageRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                bmpls.clear();
+                for(DataSnapshot d:dataSnapshot.getChildren()) {
+                    byte[] imageAsBytes = Base64.decode(d.getValue(String.class), Base64.DEFAULT);
+                    Bitmap bmp = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+
+                    bmpls.add(new Images(bmp));
+
+
+                    dba.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
     }
 }

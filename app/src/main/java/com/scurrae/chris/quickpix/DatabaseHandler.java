@@ -54,7 +54,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // Values being added to db
         ContentValues values = new ContentValues();
         values.put(KEY_ID, images.get_id());
-//        values.put(KEY_PICTURE, images.get_image());
+        values.put(KEY_PICTURE, images.getBArray(images.get_image()));
 
         // Adding new row
         db.insert(TABLE_PICTURES, null, values);
@@ -74,13 +74,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             do{
                 Images image = new Images();
                 image.set_id(Integer.parseInt(cursor.getString(0)));
-//                image.set_image(cursor.getString(1));
+                image.set_image(image.getBitmap(cursor.getBlob(0)));
                 // Adding single contact to list
                 imagesList.add(image);
             } while (cursor.moveToNext());
 
         }
-        // Return contact list
+        // Return image list
         return imagesList;
     }
 }
