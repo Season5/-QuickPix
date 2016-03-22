@@ -47,12 +47,12 @@ public class DatabaseAdapter extends RecyclerView.Adapter<DatabaseAdapter.MyView
     }
     class MyViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
-        GridView gridView;
+//        GridView gridView;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             imageView = (ImageView)itemView.findViewById(R.id.imagevi);
-            gridView = (GridView)itemView.findViewById(R.id.gridview);
+//            gridView = (GridView)itemView.findViewById(R.id.gridview);
         }
     }
 }

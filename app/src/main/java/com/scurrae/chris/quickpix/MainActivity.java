@@ -1,5 +1,6 @@
 package com.scurrae.chris.quickpix;
 
+import android.app.ActionBar;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -35,13 +37,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private Button button;
-    private ImageView imageView;
-    private DatabaseHandler db;
-    static final int CAM_REQUEST = 1;
-    private GridView gridView;
     private RecyclerView recyclerView;
     private List<Images> bmpls = new ArrayList<>();
-    private List<Bitmap> nk = new ArrayList<>();
     private DatabaseAdapter dba;
 
     @Override
@@ -49,8 +46,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        // Edit actionbar title
+        CharSequence cs = "Quickpix";
+        setTitle(cs);
+
         button = (Button)findViewById(R.id.open_cam);
-//        imageView = (ImageView)findViewById(R.id.grid);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView)findViewById(R.id.recycler);
         recyclerView.setAdapter(dba);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+
     }
     private void openCamera(){
         Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -77,11 +79,8 @@ public class MainActivity extends AppCompatActivity {
         Images i = new Images();
         if(resultCode == RESULT_OK){
             Bitmap bmp = (Bitmap) data.getExtras().get("data");
-//            imageView.setImageBitmap(bmp);
             String imagefile = Base64.encodeToString(i.getBArray(bmp), Base64.DEFAULT);
             imageRef.push().setValue(imagefile);
-
-//            db.addImage(new Images(bmp));
         }
 
 
