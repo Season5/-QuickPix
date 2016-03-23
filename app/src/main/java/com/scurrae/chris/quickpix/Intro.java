@@ -1,7 +1,7 @@
 package com.scurrae.chris.quickpix;
 
 /**
- * Created by davidkezi on 12/03/2016.
+ * Created by CKiilu on 12/03/2016.
  */
 
 import android.content.Intent;
